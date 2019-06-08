@@ -36,14 +36,21 @@ export default class HistoricScreen extends React.Component {
         </Header>
         <Content>
           <List>
-            <ListItem>
-              <Text>Simon Mignolet</Text>
+            <ListItem onPress={() => {console.log('sisi')}}>
+              <Left>
+                 <Text>Dossier : XXXX</Text>
+               </Left>
+               <Right>
+                 <Icon name="arrow-forward" />
+               </Right>
             </ListItem>
-            <ListItem>
-              <Text>Nathaniel Clyne</Text>
-            </ListItem>
-            <ListItem>
-              <Text>Dejan Lovren</Text>
+            <ListItem onPress={() => {console.log('sisi')}}>
+              <Left>
+                 <Text>Dossier : YYYY</Text>
+               </Left>
+               <Right>
+                 <Icon name="arrow-forward" />
+               </Right>
             </ListItem>
           </List>
         </Content>
