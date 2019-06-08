@@ -1,12 +1,16 @@
 import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
-export default function LinksScreen() {
-  return (
-    <ScrollView style={styles.container}>
+export default class LoginScreen extends React.Component {
 
-    </ScrollView>
-  );
+  render() {
+    return (
+      <ScrollView style={styles.container}>
+
+      </ScrollView>
+    );
+  }
+
 }
 
 const styles = StyleSheet.create({

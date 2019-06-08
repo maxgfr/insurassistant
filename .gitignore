@@ -9,3 +9,4 @@ web-report/
 node_modules/
 .expo/
 .expo-shared/
+.env
