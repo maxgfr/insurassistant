@@ -1,5 +1,5 @@
 ---
 applications:
- - name: Insurassistant
+ - name: insurassistant
    random-route: true
    memory: 256M
