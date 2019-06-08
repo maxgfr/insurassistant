@@ -3,7 +3,6 @@ import { Asset } from 'expo-asset';
 import * as Font from 'expo-font';
 import React, { useState } from 'react';
 import { Platform, StatusBar, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 import AppNavigator from './navigation/AppNavigator';
 
@@ -31,10 +30,9 @@ export default function App(props) {
 async function loadResourcesAsync() {
   await Promise.all([
     Font.loadAsync({
-      ...Ionicons.font,
-      'Roboto': require('native-base/Fonts/Roboto.ttf'),
-      'Roboto_medium': require('native-base/Fonts/Roboto_medium.ttf')
-    })
+      'Roboto': require("native-base/Fonts/Roboto.ttf"),
+      'Roboto_medium': require("native-base/Fonts/Roboto_medium.ttf")
+    }),
   ]);
 }
 
