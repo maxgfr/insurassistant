@@ -18,7 +18,6 @@ cloudant.db.create(process.env.DB_NAME, function(err, data) {
     console.log("Database created.");
 });
 const my_db = cloudant.db.use(process.env.DB_NAME);
-const assistant_id = process.env.ASSISTANT_ID;
 
 app.get('/test-db', (req, res) => {
   cloudant.db.list()
@@ -39,7 +38,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/create-session', (req, res) => {
-  assistant.createSession({ assistant_id: assistant_id }, (err, response) => {
+  assistant.createSession({ assistant_id: process.env.ASSISTANT_ID }, (err, response) => {
       if (err) {
         res.json({success: false, error: err});
       } else {
@@ -48,46 +47,33 @@ app.get('/create-session', (req, res) => {
     });
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}!`)
+app.post('/send-message', (req, res) => {
+  if(!req.body.session_id || !req.body.context || !req.body.message) {
+    res.json({success: false, error: 'session_id or context or message is not set in the body'});
+  }
+  assistant.message(
+    {
+      assistant_id: process.env.ASSISTANT_ID,
+      session_id: req.body.session_id,
+      context: req.body.context,
+      input: {
+        'message_type': 'text',
+        'text': req.body.message,
+        'options': {
+          'return_context': true
+        }
+      }
+    },
+    (err, response)  => {
+      if (err) {
+        res.json({success: false, error: err});
+      } else {
+        res.json({success: true, data: response});
+      }
+    }
+  );
 });
 
-function createSession(assistant_id) {
-  return new Promise((resolve, reject) => {
-    try {
-
-    } catch(e) {
-      reject(e);
-    }
-  });
-}
-
-function sendConversationMessage(assistant_id, session_id, msg, context) {
-    return new Promise((resolve, reject) => {
-      try {
-        conversation.message(
-          {
-            assistant_id: assistant_id,
-            session_id: session_id,
-            context: context,
-            input: {
-              'message_type': 'text',
-              'text': msg,
-              'options': {
-                'return_context': true
-              }
-            }
-          },
-          (err, response)  => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(response);
-            }
-          }
-        );
-      } catch(e) {
-        reject(e);
-      }
-    });
-}
+app.listen(port, () => {
+  console.log(`The application is listening on port ${port}`)
+});
