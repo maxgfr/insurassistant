@@ -1,6 +1,9 @@
 require('dotenv').config();
 const express = require('express');
+const bodyParser = require('body-parser');
 const app = express();
+app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
+app.use(bodyParser.json()); // parse application/json
 const port = process.env.PORT || '3000';
 const AssistantV2 = require('ibm-watson/assistant/v2');
 const assistant = new AssistantV2({
@@ -48,30 +51,31 @@ app.get('/create-session', (req, res) => {
 });
 
 app.post('/send-message', (req, res) => {
-  if(!req.body.session_id || !req.body.context || !req.body.message) {
+  if(!req.body || !req.body.session_id || !req.body.context || !req.body.message) {
     res.json({success: false, error: 'session_id or context or message is not set in the body'});
-  }
-  assistant.message(
-    {
-      assistant_id: process.env.ASSISTANT_ID,
-      session_id: req.body.session_id,
-      context: req.body.context,
-      input: {
-        'message_type': 'text',
-        'text': req.body.message,
-        'options': {
-          'return_context': true
+  } else {
+    assistant.message(
+      {
+        assistant_id: process.env.ASSISTANT_ID,
+        session_id: req.body.session_id,
+        context: req.body.context,
+        input: {
+          'message_type': 'text',
+          'text': req.body.message,
+          'options': {
+            'return_context': true
+          }
+        }
+      },
+      (err, response)  => {
+        if (err) {
+          res.json({success: false, error: err});
+        } else {
+          res.json({success: true, data: response});
         }
       }
-    },
-    (err, response)  => {
-      if (err) {
-        res.json({success: false, error: err});
-      } else {
-        res.json({success: true, data: response});
-      }
-    }
-  );
+    );
+  }
 });
 
 app.listen(port, () => {
