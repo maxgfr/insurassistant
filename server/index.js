@@ -5,8 +5,7 @@ const port = process.env.PORT || '3000';
 const AssistantV2 = require('ibm-watson/assistant/v2');
 const assistant = new AssistantV2({
   version: '2019-02-28',
-  username: process.env.ASSISTANT_USERNAME,
-  password: process.env.ASSISTANT_PASSWORD,
+  iam_apikey: process.env.ASSISTANT_APIKEY,
   url: process.env.ASSISTANT_URL
 });
 const Cloudant = require('@cloudant/cloudant');
@@ -36,11 +35,17 @@ app.get('/test-db', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.json({status: 'avalaible'})
+  res.json({success: true, data: {status: 'avalaible'}})
 });
 
-app.post('/', (req, res) => {
-  res.json({status: 'avalaible'})
+app.get('/create-session', (req, res) => {
+  assistant.createSession({ assistant_id: assistant_id }, (err, response) => {
+      if (err) {
+        res.json({success: false, error: err});
+      } else {
+        res.json({success: true, data: response});
+      }
+    });
 });
 
 app.listen(port, () => {
@@ -50,13 +55,7 @@ app.listen(port, () => {
 function createSession(assistant_id) {
   return new Promise((resolve, reject) => {
     try {
-      conversation.createSession({ assistant_id: assistant_id }, (err, response) => {
-          if (err) {
-            console.log(err);
-          } else{
-            resolve(response);
-          }
-        });
+
     } catch(e) {
       reject(e);
     }
