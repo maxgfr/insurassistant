@@ -78,6 +78,35 @@ app.post('/send-message', (req, res) => {
   }
 });
 
+app.get('/get-data', (req, res) => {
+  console.log(req.query)
+  my_db.find({ selector: req.query }, (err, result) => {
+    if (!err) {
+      var data  = [];
+      for (var i = 0; i < result.docs.length; i++) {
+        data.push(result.docs[i]);
+      }
+      res.json({success: true, data: data});
+    } else {
+      res.json({success: false, error: err});
+    }
+  });
+});
+
+app.post('/save-data', (req, res) => {
+  if(!req.body) {
+    res.json({success: false, error: 'no body'});
+  } else {
+    my_db.insert(req.body, (err, body, header) => {
+      if (err) {
+        res.json({success: false, error: err.message});
+      } else {
+        res.json({success: true, data: req.body});
+      }
+    });
+  }
+});
+
 app.listen(port, () => {
   console.log(`The application is listening on port ${port}`)
 });
