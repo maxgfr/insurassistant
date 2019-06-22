@@ -94,6 +94,25 @@ export default class ChatScreen extends React.Component {
       id_message: id_msg,
       is_waiting: false
     }))
+    this.saveDb();
+  }
+
+  saveDb = async () => {
+    var data = {
+      messages: this.state.messages,
+      session_id: this.state.session_id,
+      context: this.state.context,
+      id_message: this.state.id_message
+    }
+    const response_serv = await fetch('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/save-data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    });
+    var result_serv = await response_serv.json();
+    console.log(result_serv)
   }
 
   render() {
