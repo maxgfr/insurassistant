@@ -4,9 +4,8 @@
   align-items: center;
   background: white;
   border-top: 1px solid #eeeef1;
-  position: fixed;
-  width: calc(100% - 20px);
-  bottom: 0px;
+  width: 100%;
+  position: absolute;
 }
 
 @supports (backdrop-filter: blur(20px)) {
@@ -18,11 +17,21 @@
 }
 
 .compose-input {
-  flex: 1;
   border: none;
   font-size: 14px;
   height: 40px;
   background: none;
+  width: 100%;
+}
+
+.compose-send {
+  background: #0179FF;
+  color: white;
+  border-color: #0179FF;
+  height: 30px;
+  width: 30px;
+  border-radius: 15px;
+  align-items: center;
 }
 
 .compose-input::placeholder {
