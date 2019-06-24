@@ -1,4 +1,3 @@
-import { AppLoading, Asset, Linking } from 'expo'
 import React, { Component } from 'react'
 import {
   Container,
@@ -12,9 +11,7 @@ import {
   Text
 } from "native-base"
 import {
-  ActivityIndicator,
-  View,
-  StyleSheet,
+  View
 } from "react-native"
 import {
   Bubble,
@@ -44,7 +41,8 @@ export default class ChatScreen extends Component {
     watson_pp: 'https://upload.wikimedia.org/wikipedia/en/thumb/0/00/IBM_Watson_Logo_2017.png/220px-IBM_Watson_Logo_2017.png',
     user_id: 'user_id',
     user_pp: 'https://cdn-images-1.medium.com/max/1200/1*paQ7E6f2VyTKXHpR-aViFg.png',
-    user_name: 'Maxime'
+    user_name: 'Maxime',
+    list_message_unread: []
   }
 
   async componentWillMount() {
@@ -99,19 +97,25 @@ export default class ChatScreen extends Component {
       session_id: this.state.session_id
     }
     //console.log(data)
-    const response_serv = await fetch('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/send-message', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
-    });
-    var result_serv = await response_serv.json();
-    console.log(result_serv)
-    var process_message = this.processWatsonMessage(result_serv)
+    var process_message = null;
+    if(this.state.list_message_unread.length == 0) {
+      const response_serv = await fetch('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/send-message', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+      });
+      var result_serv = await response_serv.json();
+      console.log(result_serv)
+      this.state.context = result_serv.data.context;
+      process_message = this.processWatsonMessage(result_serv)
+    } else {
+      process_message = this.state.list_message_unread[this.state.list_message_unread.length - 1];
+      this.state.list_message_unread.pop();
+    }
     this.setState(previousState => ({
       messages: GiftedChat.append(previousState.messages, process_message),
-      context: result_serv.data.context,
       is_waiting: false
     }))
     this.saveDb(process_message);
@@ -160,8 +164,13 @@ export default class ChatScreen extends Component {
         msg['quickReplies'] = quickReplies;
         msg['text'] = result_serv.data.output.generic[i].title;
       }
-      new_message.push(msg);
+      if(i == 0) {
+        new_message.push(msg);
+      } else {
+        this.state.list_message_unread.push(msg);
+      }
     }
+    this.state.list_message_unread.reverse();
     return new_message;
   }
 
