@@ -6,7 +6,7 @@ import {
   getLocationAsync,
   pickImageAsync,
   takePictureAsync,
-} from './mediaUtils'
+} from '../utils/mediaUtils'
 
 export default class AccessoryBar extends React.Component {
   render() {

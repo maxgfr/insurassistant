@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ViewPropTypes,
 } from 'react-native'
+import { Button } from 'native-base'
 
 export default class CustomView extends React.Component {
   static propTypes = {
@@ -49,10 +50,7 @@ export default class CustomView extends React.Component {
     const { currentMessage, containerStyle, mapViewStyle } = this.props
     if (currentMessage.location) {
       return (
-        <TouchableOpacity
-          style={[styles.container, containerStyle]}
-          onPress={this.openMapAsync}
-        >
+        <TouchableOpacity style={[styles.container, containerStyle]}>
           <MapView
             style={[styles.mapView, mapViewStyle]}
             region={{
@@ -61,6 +59,7 @@ export default class CustomView extends React.Component {
               latitudeDelta: 0.0922,
               longitudeDelta: 0.0421,
             }}
+            onPress={this.openMapAsync}
             scrollEnabled={false}
             zoomEnabled={false}
           />

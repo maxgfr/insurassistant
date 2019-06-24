@@ -12,7 +12,7 @@ import {
   getLocationAsync,
   pickImageAsync,
   takePictureAsync,
-} from './mediaUtils'
+} from '../utils/mediaUtils'
 
 export default class CustomActions extends React.Component {
   onActionsPress = () => {
