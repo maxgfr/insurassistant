@@ -58,23 +58,28 @@ export default class ChatScreen extends Component {
     var result_serv_init = await response_serv_init.json();
     //console.log(result_serv_init);
     this.state.session_id = result_serv_init.data.session_id;
-    this.sendMessage('Bonjour');
+    this.onSend([{
+      _id: this.state.id_message,
+      text: 'Bonjour',
+      createdAt: new Date(),
+      user: {
+        _id: this.state.user_id,
+        name: this.state.user_name,
+        avatar: this.state.user_pp
+      }
+    }]);
   }
 
-  onSend(messages = []) {
-    var message = messages[0].text;
+  onSend = async (messages = []) => {
     this.setState(previousState => ({
       messages: GiftedChat.append(previousState.messages, messages),
       is_waiting: true
     }))
-    this.sendMessage(message);
-  }
-
-  sendMessage = async (message) => {
+    /* WATSON */
     var data = {
-    	message: message,
-    	context: this.state.context,
-    	session_id: this.state.session_id
+      message: messages[0].text,
+      context: this.state.context,
+      session_id: this.state.session_id
     }
     //console.log(data)
     const response_serv = await fetch('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/send-message', {
@@ -87,7 +92,7 @@ export default class ChatScreen extends Component {
     var result_serv = await response_serv.json();
     //console.log(result_serv)
     var id_msg = this.state.id_message + 1;
-    var txt = result_serv.data.output.generic[0].text
+    var txt = result_serv.data.output.generic[0].text;
     var new_message = [];
     var msg = {
       _id: id_msg,
@@ -106,7 +111,31 @@ export default class ChatScreen extends Component {
       id_message: id_msg,
       is_waiting: false
     }))
+    /* WATSON */
     this.saveDb();
+  }
+
+  onSendSpecial = (data = []) => {
+    const createdAt = new Date();
+    const user = {
+      _id: this.state.user_id,
+      name: this.state.user_name,
+      avatar: this.state.user_pp
+    }
+    var text = "";
+    if(data[0].location) {
+      text = "Here is my latitude";
+    } else if(data[0].image) {
+      text = "Here is the image";
+    }
+    const messageToUpload = data.map(message => ({
+      ...message,
+      user,
+      createdAt,
+      text,
+      _id: Math.round(Math.random() * 1000000)
+    }))
+    this.onSend(messageToUpload)
   }
 
   saveDb = async () => {
@@ -152,24 +181,14 @@ export default class ChatScreen extends Component {
     }
   }
 
-  parsePatterns = linkStyle => {
-    return [
-      {
-        pattern: /#(\w+)/,
-        style: { textDecorationLine: 'underline', color: 'darkorange' },
-        onPress: () => Linking.openURL('http://gifted.chat'),
-      },
-    ]
-  }
-
   renderCustomView(props) {
     return <CustomView {...props} />
   }
 
-  renderAccessory = () => <AccessoryBar onSend={this.onSend} />
+  renderAccessory = () => <AccessoryBar onSend={this.onSendSpecial} />
 
   renderCustomActions = props => {
-    return <CustomActions {...props} onSend={this.onSend} />
+    return <CustomActions {...props} onSend={this.onSendSpecial} />
   }
 
   renderBubble = props => {
@@ -228,14 +247,12 @@ export default class ChatScreen extends Component {
           messages={this.state.messages}
           onSend={this.onSend}
           isLoadingEarlier={this.state.isLoadingEarlier}
-          parsePatterns={this.parsePatterns}
           user={{
             _id: this.state.user_id,
             avatar: this.state.user_pp,
             name: this.state.user_name
           }}
           onQuickReply={this.onQuickReply}
-          keyboardShouldPersistTaps='never'
           renderAccessory={this.renderAccessory}
           renderActions={this.renderCustomActions}
           renderBubble={this.renderBubble}
