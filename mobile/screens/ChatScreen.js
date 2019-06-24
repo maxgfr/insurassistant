@@ -146,7 +146,7 @@ export default class ChatScreen extends Component {
         body: JSON.stringify(data)
     });
     var result_serv = await response_serv.json();
-    console.log(result_serv)
+    //console.log(result_serv)
   }
 
   onQuickReply = replies => {
@@ -225,7 +225,7 @@ export default class ChatScreen extends Component {
   render() {
     return (
       <Container>
-        <Header>
+        <Header style={{backgroundColor: "#ffffff"}}>
           <Left>
             <Button transparent onPress={() => {this.props.navigation.goBack()}}>
               <Icon name='arrow-back' style={{color: '#000'}}/>

@@ -20,8 +20,8 @@ export default class HomeScreen extends React.Component {
 
   render() {
     return (
-      <Container style={{backgroundColor: "#FFF"}}>
-        <Header>
+      <Container style={{backgroundColor: "#ffffff"}}>
+        <Header style={{backgroundColor: "#ffffff"}}>
           <Left />
           <Body>
             <Title>Home</Title>
@@ -31,14 +31,20 @@ export default class HomeScreen extends React.Component {
 
         <Content padder>
           <CardSelect
+            title='Mes informations'
+            backgroundColor='#F1F3C2'
+            textColor='#000000'
+            uri='https://luckyfurnitureuae.com/wp-content/uploads/2018/01/Me..png'
+            onPress={() => {this.props.navigation.navigate('Perso')}}/>
+          <CardSelect
             title='Suivi de dossier'
-            backgroundColor='#1565c0'
+            backgroundColor='#00293C'
             textColor='#ffffff'
             uri='http://www.pngmart.com/files/1/Folders-PNG.png'
             onPress={() => {this.props.navigation.navigate('Historic')}}/>
           <CardSelect
             title='Assistant'
-            backgroundColor='#d84315'
+            backgroundColor='#F62A00'
             textColor='#ffffff'
             uri='https://i.dlpng.com/static/png/3839163_preview.png'
             onPress={() => {this.props.navigation.navigate('Chat')}}/>
