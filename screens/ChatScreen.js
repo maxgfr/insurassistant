@@ -25,10 +25,6 @@ import AccessoryBar from '../components/AccessoryBar'
 import CustomActions from '../components/CustomActions'
 import CustomView from '../components/CustomView'
 
-const filterBotMessages = message =>
-  !message.system && message.user && message.user._id && message.user._id === 2
-const findStep = step => message => message._id === step
-
 export default class ChatScreen extends Component {
 
   static navigationOptions = {
@@ -65,16 +61,7 @@ export default class ChatScreen extends Component {
     this.sendMessage('Bonjour');
   }
 
-  onSend(messages = []) {
-    var message = messages[0].text;
-    this.setState(previousState => ({
-      messages: GiftedChat.append(previousState.messages, messages),
-      is_waiting: true
-    }))
-    this.sendMessage(message);
-  }
-
-  sendMessage = async (message) => {
+  onSend = async (message) => {
     var data = {
     	message: message,
     	context: this.state.context,
@@ -131,29 +118,28 @@ export default class ChatScreen extends Component {
     console.log(result_serv)
   }
 
-
-  onSend = (messages = []) => {
-    const step = this.state.step + 1
-    this.setState(previousState => {
-      const sentMessages = [{ ...messages[0], sent: true, received: true }]
-      return {
-        messages: GiftedChat.append(previousState.messages, sentMessages),
-        step,
-      }
-    })
-    // for demo purpose
-    setTimeout(() => this.botSend(step), Math.round(Math.random() * 1000))
-  }
-
-  botSend = (step = 0) => {
-    const newMessage = messagesData
-      .reverse()
-      // .filter(filterBotMessages)
-      .find(findStep(step))
-    if (newMessage) {
-      this.setState(previousState => ({
-        messages: GiftedChat.append(previousState.messages, newMessage),
-      }))
+  onQuickReply = replies => {
+    const createdAt = new Date()
+    if (replies.length === 1) {
+      this.onSend([
+        {
+          createdAt,
+          _id: Math.round(Math.random() * 1000000),
+          text: replies[0].title,
+          user,
+        },
+      ])
+    } else if (replies.length > 1) {
+      this.onSend([
+        {
+          createdAt,
+          _id: Math.round(Math.random() * 1000000),
+          text: replies.map(reply => reply.title).join(', '),
+          user,
+        },
+      ])
+    } else {
+      console.warn('replies param is not set correctly')
     }
   }
 
@@ -171,38 +157,10 @@ export default class ChatScreen extends Component {
     return <CustomView {...props} />
   }
 
-  onReceive = text => {
-    this.setState(previousState => {
-      return {
-        messages: GiftedChat.append(previousState.messages, {
-          _id: Math.round(Math.random() * 1000000),
-          text,
-          createdAt: new Date(),
-          user: {
-            _id: this.state.watson_id,
-            name: this.state.watson_name,
-            avatar: this.state.watson_pp
-          },
-        }),
-      }
-    })
-  }
-
-  onSendFromUser = (messages = []) => {
-    const createdAt = new Date()
-    const messagesToUpload = messages.map(message => ({
-      ...message,
-      user,
-      createdAt,
-      _id: Math.round(Math.random() * 1000000),
-    }))
-    this.onSend(messagesToUpload)
-  }
-
-  renderAccessory = () => <AccessoryBar onSend={this.onSendFromUser} />
+  renderAccessory = () => <AccessoryBar onSend={this.onSend} />
 
   renderCustomActions = props => {
-    return <CustomActions {...props} onSend={this.onSendFromUser} />
+    return <CustomActions {...props} onSend={this.onSend} />
   }
 
   renderBubble = props => {
@@ -241,31 +199,6 @@ export default class ChatScreen extends Component {
       )
     }
     return null
-  }
-
-  onQuickReply = replies => {
-    const createdAt = new Date()
-    if (replies.length === 1) {
-      this.onSend([
-        {
-          createdAt,
-          _id: Math.round(Math.random() * 1000000),
-          text: replies[0].title,
-          user,
-        },
-      ])
-    } else if (replies.length > 1) {
-      this.onSend([
-        {
-          createdAt,
-          _id: Math.round(Math.random() * 1000000),
-          text: replies.map(reply => reply.title).join(', '),
-          user,
-        },
-      ])
-    } else {
-      console.warn('replies param is not set correctly')
-    }
   }
 
   render() {
