@@ -58,16 +58,7 @@ export default class ChatScreen extends Component {
     var result_serv_init = await response_serv_init.json();
     //console.log(result_serv_init);
     this.state.session_id = result_serv_init.data.session_id;
-    this.onSend([{
-      _id: this.state.id_message,
-      text: 'Bonjour',
-      createdAt: new Date(),
-      user: {
-        _id: this.state.user_id,
-        name: this.state.user_name,
-        avatar: this.state.user_pp
-      }
-    }]);
+    this.sendToWatson('Bonjour');
   }
 
   onSend = async (messages = []) => {
@@ -75,9 +66,35 @@ export default class ChatScreen extends Component {
       messages: GiftedChat.append(previousState.messages, messages),
       is_waiting: true
     }))
-    /* WATSON */
+    this.sendToWatson(messages[0].text);
+  }
+
+  onSendSpecial = (data = []) => {
+    const createdAt = new Date();
+    const user = {
+      _id: this.state.user_id,
+      name: this.state.user_name,
+      avatar: this.state.user_pp
+    }
+    var text = "";
+    if(data[0].location) {
+      text = "Here is my latitude";
+    } else if(data[0].image) {
+      text = "Here is the image";
+    }
+    const messageToUpload = data.map(message => ({
+      ...message,
+      user,
+      createdAt,
+      text,
+      _id: Math.round(Math.random() * 1000000)
+    }))
+    this.onSend(messageToUpload)
+  }
+
+  sendToWatson = async (msg_send) => {
     var data = {
-      message: messages[0].text,
+      message: msg_send,
       context: this.state.context,
       session_id: this.state.session_id
     }
@@ -111,31 +128,7 @@ export default class ChatScreen extends Component {
       id_message: id_msg,
       is_waiting: false
     }))
-    /* WATSON */
     this.saveDb();
-  }
-
-  onSendSpecial = (data = []) => {
-    const createdAt = new Date();
-    const user = {
-      _id: this.state.user_id,
-      name: this.state.user_name,
-      avatar: this.state.user_pp
-    }
-    var text = "";
-    if(data[0].location) {
-      text = "Here is my latitude";
-    } else if(data[0].image) {
-      text = "Here is the image";
-    }
-    const messageToUpload = data.map(message => ({
-      ...message,
-      user,
-      createdAt,
-      text,
-      _id: Math.round(Math.random() * 1000000)
-    }))
-    this.onSend(messageToUpload)
   }
 
   saveDb = async () => {
