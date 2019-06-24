@@ -38,7 +38,6 @@ export default class ChatScreen extends Component {
     messages: [],
     session_id: '',
     context: {},
-    id_message: 0,
     is_waiting: false,
     watson_id: 'watson_id',
     watson_name: 'Watson',
@@ -62,6 +61,7 @@ export default class ChatScreen extends Component {
   }
 
   onSend = async (messages = []) => {
+    console.log(messages)
     this.setState(previousState => ({
       messages: GiftedChat.append(previousState.messages, messages),
       is_waiting: true
@@ -107,36 +107,21 @@ export default class ChatScreen extends Component {
         body: JSON.stringify(data)
     });
     var result_serv = await response_serv.json();
-    //console.log(result_serv)
-    var id_msg = this.state.id_message + 1;
-    var txt = result_serv.data.output.generic[0].text;
-    var new_message = [];
-    var msg = {
-      _id: id_msg,
-      text: txt,
-      createdAt: new Date(),
-      user: {
-        _id: this.state.watson_id,
-        name: this.state.watson_name,
-        avatar: this.state.watson_pp
-      }
-    }
-    new_message.push(msg);
+    console.log(result_serv)
+    var process_message = this.processWatsonMessage(result_serv)
     this.setState(previousState => ({
-      messages: GiftedChat.append(previousState.messages, new_message),
+      messages: GiftedChat.append(previousState.messages, process_message),
       context: result_serv.data.context,
-      id_message: id_msg,
       is_waiting: false
     }))
-    this.saveDb();
+    this.saveDb(process_message);
   }
 
-  saveDb = async () => {
+  saveDb = async (last_message) => {
     var data = {
-      messages: this.state.messages,
+      message: last_message,
       session_id: this.state.session_id,
       context: this.state.context,
-      id_message: this.state.id_message
     }
     const response_serv = await fetch('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/save-data', {
         method: 'POST',
@@ -149,29 +134,50 @@ export default class ChatScreen extends Component {
     //console.log(result_serv)
   }
 
-  onQuickReply = replies => {
-    const createdAt = new Date()
-    if (replies.length === 1) {
-      this.onSend([
-        {
-          createdAt,
-          _id: Math.round(Math.random() * 1000000),
-          text: replies[0].title,
-          user,
-        },
-      ])
-    } else if (replies.length > 1) {
-      this.onSend([
-        {
-          createdAt,
-          _id: Math.round(Math.random() * 1000000),
-          text: replies.map(reply => reply.title).join(', '),
-          user,
-        },
-      ])
-    } else {
-      console.warn('replies param is not set correctly')
+  processWatsonMessage = (result_serv) => {
+    var new_message = [];
+    for(var i = 0; i<result_serv.data.output.generic.length; i++) {
+      var msg = {
+        _id: Math.round(Math.random() * 1000000),
+        text: result_serv.data.output.generic[i].text,
+        createdAt: new Date(),
+        user: {
+          _id: this.state.watson_id,
+          name: this.state.watson_name,
+          avatar: this.state.watson_pp
+        }
+      }
+      if(result_serv.data.output.generic[i].options) {
+        var values = [];
+        for(var j=0; j<result_serv.data.output.generic[i].options.length; j++) {
+          values.push({title: result_serv.data.output.generic[i].options[j].label, value: result_serv.data.output.generic[i].options[j].value.input.text});
+        }
+        var quickReplies = {
+          type: 'radio',
+          keepIt: true,
+          values: values
+        }
+        msg['quickReplies'] = quickReplies;
+        msg['text'] = result_serv.data.output.generic[i].title;
+      }
+      new_message.push(msg);
     }
+    return new_message;
+  }
+
+  onQuickReply = replies => {
+    //console.log(replies);
+    var real_message = [{
+      _id: replies[0].messageId,
+      createdAt: new Date(),
+      text: replies[0].title,
+      user: {
+        _id: this.state.user_id,
+        name: this.state.user_name,
+        avatar: this.state.user_pp
+      }
+    }];
+    this.onSend(real_message);
   }
 
   renderCustomView(props) {
