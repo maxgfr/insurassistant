@@ -23,7 +23,7 @@ export default class HistoricScreen extends React.Component {
   render() {
     return (
       <Container>
-        <Header style={{backgroundColor: "#ffffff"}}>
+        <Header style={{backgroundColor: "#ffffff", borderBottomWidth: 0}}>
           <Left>
             <Button transparent onPress={() => {this.props.navigation.goBack()}}>
               <Icon name='arrow-back' style={{color: '#000'}}/>

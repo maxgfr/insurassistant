@@ -154,7 +154,7 @@ export default class ChatScreen extends Component {
         }
         var quickReplies = {
           type: 'radio',
-          keepIt: true,
+          keepIt: false,
           values: values
         }
         msg['quickReplies'] = quickReplies;
@@ -166,9 +166,9 @@ export default class ChatScreen extends Component {
   }
 
   onQuickReply = replies => {
-    //console.log(replies);
+    console.log(replies);
     var real_message = [{
-      _id: replies[0].messageId,
+      _id: Math.round(Math.random() * 1000000),
       createdAt: new Date(),
       text: replies[0].title,
       user: {
@@ -231,7 +231,7 @@ export default class ChatScreen extends Component {
   render() {
     return (
       <Container>
-        <Header style={{backgroundColor: "#ffffff"}}>
+        <Header style={{backgroundColor: "#ffffff", borderBottomWidth: 0}}>
           <Left>
             <Button transparent onPress={() => {this.props.navigation.goBack()}}>
               <Icon name='arrow-back' style={{color: '#000'}}/>
