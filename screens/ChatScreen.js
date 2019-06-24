@@ -61,7 +61,16 @@ export default class ChatScreen extends Component {
     this.sendMessage('Bonjour');
   }
 
-  onSend = async (message) => {
+  onSend(messages = []) {
+    var message = messages[0].text;
+    this.setState(previousState => ({
+      messages: GiftedChat.append(previousState.messages, messages),
+      is_waiting: true
+    }))
+    this.sendMessage(message);
+  }
+
+  sendMessage = async (message) => {
     var data = {
     	message: message,
     	context: this.state.context,

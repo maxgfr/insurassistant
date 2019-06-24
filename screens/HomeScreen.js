@@ -32,12 +32,12 @@ export default class HomeScreen extends React.Component {
         <Content padder>
           <CardSelect
             title='Suivi de dossier'
-            backgroundColor='#63ccff'
+            backgroundColor='#1565c0'
             textColor='#ffffff'
             uri='http://www.pngmart.com/files/1/Folders-PNG.png'
             onPress={() => {this.props.navigation.navigate('Historic')}}/>
           <CardSelect
-            title='Accident'
+            title='Assistant'
             backgroundColor='#d84315'
             textColor='#ffffff'
             uri='https://i.dlpng.com/static/png/3839163_preview.png'
