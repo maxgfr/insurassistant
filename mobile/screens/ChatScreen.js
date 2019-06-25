@@ -35,35 +35,47 @@ export default class ChatScreen extends Component {
     messages: [],
     session_id: '',
     context: {},
-    is_waiting: false,
     watson_id: 'watson_id',
     watson_name: 'Watson',
     watson_pp: 'https://upload.wikimedia.org/wikipedia/en/thumb/0/00/IBM_Watson_Logo_2017.png/220px-IBM_Watson_Logo_2017.png',
     user_id: 'user_id',
     user_pp: 'https://cdn-images-1.medium.com/max/1200/1*paQ7E6f2VyTKXHpR-aViFg.png',
     user_name: 'Maxime',
-    list_message_unread: []
+    list_message_unread: [],
+    historic: false
   }
 
   async componentWillMount() {
-    this.setState(previousState => ({
-      is_waiting: true
-    }));
-    const response_serv_init = await fetch('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/create-session', {
-        method: 'GET'
-    });
-    var result_serv_init = await response_serv_init.json();
-    //console.log(result_serv_init);
-    this.state.session_id = result_serv_init.data.session_id;
-    this.sendToWatson('Bonjour');
+    var nav_historic = this.props.navigation.getParam('historic', false);
+    if(nav_historic) {
+      var nav_data = this.props.navigation.getParam('data', {});
+      var nav_session_id = this.props.navigation.getParam('session_id', '');
+      var all_messages = [];
+      for(var i = 0; i<nav_data.historic.length; i++) {
+        all_messages.push(nav_data.historic[i].message);
+      }
+      //console.log(all_messages);
+      all_messages.sort((a, b) => (new Date(a.createdAt).getTime() < new Date(b.createdAt).getTime()) ? 1 : -1)
+      console.log(all_messages);
+      this.setState({messages: all_messages, historic: true, session_id: nav_session_id});
+    } else {
+      const response_serv_init = await fetch('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/create-session', {
+          method: 'GET'
+      });
+      var result_serv_init = await response_serv_init.json();
+      //console.log(result_serv_init);
+      this.state.session_id = result_serv_init.data.session_id;
+      this.sendToWatson('Bonjour');
+    }
+
   }
 
   onSend = async (messages = []) => {
-    console.log(messages)
+    //console.log(messages)
     this.setState(previousState => ({
-      messages: GiftedChat.append(previousState.messages, messages),
-      is_waiting: true
+      messages: GiftedChat.append(previousState.messages, messages)
     }))
+    this.saveDb(messages[0]);
     this.sendToWatson(messages[0].text);
   }
 
@@ -107,16 +119,16 @@ export default class ChatScreen extends Component {
           body: JSON.stringify(data)
       });
       var result_serv = await response_serv.json();
-      console.log(result_serv)
+      //console.log(result_serv)
       this.state.context = result_serv.data.context;
       process_message = this.processWatsonMessage(result_serv)
     } else {
       process_message = this.state.list_message_unread[this.state.list_message_unread.length - 1];
       this.state.list_message_unread.pop();
     }
+    process_message['createdAt'] = new Date();
     this.setState(previousState => ({
-      messages: GiftedChat.append(previousState.messages, process_message),
-      is_waiting: false
+      messages: GiftedChat.append(previousState.messages, process_message)
     }))
     this.saveDb(process_message);
   }
@@ -139,12 +151,12 @@ export default class ChatScreen extends Component {
   }
 
   processWatsonMessage = (result_serv) => {
-    var new_message = [];
+    var new_message = {};
     for(var i = 0; i<result_serv.data.output.generic.length; i++) {
       var msg = {
         _id: Math.round(Math.random() * 1000000),
         text: result_serv.data.output.generic[i].text,
-        createdAt: new Date(),
+        //createdAt: new Date(),
         user: {
           _id: this.state.watson_id,
           name: this.state.watson_name,
@@ -165,7 +177,7 @@ export default class ChatScreen extends Component {
         msg['text'] = result_serv.data.output.generic[i].title;
       }
       if(i == 0) {
-        new_message.push(msg);
+        new_message = msg;
       } else {
         this.state.list_message_unread.push(msg);
       }
@@ -175,7 +187,7 @@ export default class ChatScreen extends Component {
   }
 
   onQuickReply = replies => {
-    console.log(replies);
+    //console.log(replies);
     var real_message = [{
       _id: Math.round(Math.random() * 1000000),
       createdAt: new Date(),
@@ -254,6 +266,8 @@ export default class ChatScreen extends Component {
         <GiftedChat
           messages={this.state.messages}
           onSend={this.onSend}
+          renderUsernameOnMessage={true}
+          showUserAvatar={true}
           isLoadingEarlier={this.state.isLoadingEarlier}
           user={{
             _id: this.state.user_id,

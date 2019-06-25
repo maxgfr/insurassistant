@@ -30,12 +30,17 @@ export default class HomeScreen extends React.Component {
         </Header>
 
         <Content padder>
-          <CardSelect
-            title='Mes informations'
-            backgroundColor='#F1F3C2'
-            textColor='#000000'
-            uri='https://luckyfurnitureuae.com/wp-content/uploads/2018/01/Me..png'
-            onPress={() => {this.props.navigation.navigate('Perso')}}/>
+          {
+            /*
+            <CardSelect
+              title='Mes informations'
+              backgroundColor='#F1F3C2'
+              textColor='#000000'
+              uri='https://luckyfurnitureuae.com/wp-content/uploads/2018/01/Me..png'
+              onPress={() => {this.props.navigation.navigate('Perso')}}/>
+
+            */
+          }
           <CardSelect
             title='Suivi de dossier'
             backgroundColor='#00293C'
