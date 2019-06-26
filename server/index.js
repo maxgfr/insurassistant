@@ -1,9 +1,11 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
 app.use(bodyParser.json()); // parse application/json
+app.use(cors()); // enable cors
 const port = process.env.PORT || '3000';
 const AssistantV2 = require('ibm-watson/assistant/v2');
 const assistant = new AssistantV2({

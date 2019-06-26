@@ -90,7 +90,7 @@ export default class ChatScreen extends Component {
     if(data[0].location) {
       text = "Here is my latitude";
     } else if(data[0].image) {
-      text = "Here is the image";
+      text = "---IMAGE SENT---";
     }
     const messageToUpload = data.map(message => ({
       ...message,
