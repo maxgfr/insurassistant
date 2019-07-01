@@ -3,6 +3,9 @@ import ConversationList from '../ConversationList';
 import MessageList from '../MessageList';
 import './Home.css';
 import axios from 'axios';
+import socketIOClient from 'socket.io-client';
+
+const socket = socketIOClient('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net');
 
 export default class Home extends React.Component {
 
@@ -23,6 +26,33 @@ export default class Home extends React.Component {
 
 
   componentDidMount () {
+    socket.on('new_message', (data) => {
+      //console.log(data);
+      var historicMessage = [];
+      var byId = this.state.byId;
+      var byHash = this.state.byHash;
+      if(!byId.includes(data.session_id)) {
+        byId.push(data.session_id);
+        historicMessage = [];
+      } else {
+        historicMessage = byHash[data.session_id].historic;
+      }
+      historicMessage.push(data);
+      byHash[data.session_id] = {historic: historicMessage};
+      this.setState({byId: byId, byHash: byHash});
+      if(this.state.session_id === data.session_id) {
+        var msg = {
+          author: data.message.user._id,
+          message: data.message.text,
+          timestamp: new Date().getTime()
+        }
+        var arr = this.state.messages;
+        arr.push(msg);
+        this.setState({messages: arr});
+      } else {
+        alert('Vous avez reçu un nouveau message sur une autre conversation')
+      }
+    })
     axios.get('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/get-data').then(response => {
       //console.log(response.data);
       if(response.data.success) {
@@ -38,7 +68,7 @@ export default class Home extends React.Component {
             historicMessage = byHash[data[i].session_id].historic;
           }
           historicMessage.push(data[i]);
-            byHash[data[i].session_id] = {historic: historicMessage};
+          byHash[data[i].session_id] = {historic: historicMessage};
         }
         var conv = [];
         for(var j=0; j<byId.length; j++) {
@@ -80,6 +110,7 @@ export default class Home extends React.Component {
         }
       },
       session_id: this.state.session_id,
+      context: {}
     }
     await fetch('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/save-data', {
         method: 'POST',
@@ -88,6 +119,7 @@ export default class Home extends React.Component {
         },
         body: JSON.stringify(data)
     });
+    socket.emit('send', data);
   }
 
   _onChangeText = (evt) => {
@@ -98,7 +130,7 @@ export default class Home extends React.Component {
     var sess_id = item.name;
     var arr = this.state.byHash[sess_id].historic;
     var msgs = [];
-    console.log(arr)
+    //console.log(arr)
     for(var i=0; i<arr.length; i++) {
       msgs.push({
         author: arr[i].message.user._id,

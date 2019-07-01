@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const app = express();
+const socket = require('socket.io');
 app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
 app.use(bodyParser.json()); // parse application/json
 app.use(cors()); // enable cors
@@ -109,6 +110,14 @@ app.post('/save-data', (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`The application is listening on port ${port}`)
+const server = app.listen(port, () => console.log(`Express app is listening on port ${port}!`));
+
+const io = socket(server);
+
+io.on('connection', (socket) => {
+  
+  socket.on('send', (msg) => {
+      socket.broadcast.emit('new_message', msg);
+  });
+
 });

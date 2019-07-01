@@ -21,6 +21,9 @@ import {
 import AccessoryBar from '../components/AccessoryBar'
 import CustomActions from '../components/CustomActions'
 import CustomView from '../components/CustomView'
+import socketIOClient from 'socket.io-client'
+
+const socket = socketIOClient('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net')
 
 export default class ChatScreen extends Component {
 
@@ -45,6 +48,14 @@ export default class ChatScreen extends Component {
     historic: false
   }
 
+  componentDidMount(){
+    socket.on('new_message', (data) => {
+      this.setState(previousState => ({
+        messages: GiftedChat.append(previousState.messages, data.message)
+      }))
+    })
+  }
+
   async componentWillMount() {
     var nav_historic = this.props.navigation.getParam('historic', false);
     if(nav_historic) {
@@ -56,7 +67,7 @@ export default class ChatScreen extends Component {
       }
       //console.log(all_messages);
       all_messages.sort((a, b) => (new Date(a.createdAt).getTime() < new Date(b.createdAt).getTime()) ? 1 : -1)
-      console.log(all_messages);
+      //console.log(all_messages);
       this.setState({messages: all_messages, historic: true, session_id: nav_session_id});
     } else {
       const response_serv_init = await fetch('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/create-session', {
@@ -77,6 +88,7 @@ export default class ChatScreen extends Component {
     }))
     this.saveDb(messages[0]);
     this.sendToWatson(messages[0].text);
+    socket.emit('send', { message: messages[0], session_id: this.state.session_id });
   }
 
   onSendSpecial = (data = []) => {
@@ -120,17 +132,24 @@ export default class ChatScreen extends Component {
       });
       var result_serv = await response_serv.json();
       //console.log(result_serv)
-      this.state.context = result_serv.data.context;
-      process_message = this.processWatsonMessage(result_serv)
+      if(result_serv.data) {
+        this.state.context = result_serv.data.context
+        process_message = this.processWatsonMessage(result_serv)
+        process_message['createdAt'] = new Date();
+        this.setState(previousState => ({
+          messages: GiftedChat.append(previousState.messages, process_message)
+        }))
+        this.saveDb(process_message);
+      }
     } else {
       process_message = this.state.list_message_unread[this.state.list_message_unread.length - 1];
       this.state.list_message_unread.pop();
+      process_message['createdAt'] = new Date();
+      this.setState(previousState => ({
+        messages: GiftedChat.append(previousState.messages, process_message)
+      }))
+      this.saveDb(process_message);
     }
-    process_message['createdAt'] = new Date();
-    this.setState(previousState => ({
-      messages: GiftedChat.append(previousState.messages, process_message)
-    }))
-    this.saveDb(process_message);
   }
 
   saveDb = async (last_message) => {
