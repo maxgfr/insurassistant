@@ -115,7 +115,7 @@ const server = app.listen(port, () => console.log(`Express app is listening on p
 const io = socket(server);
 
 io.on('connection', (socket) => {
-  
+
   socket.on('send', (msg) => {
       socket.broadcast.emit('new_message', msg);
   });
