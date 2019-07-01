@@ -93,6 +93,8 @@ export default class ChatScreen extends Component {
     this.saveDb(messages[0]);
     if(this.state.useWatson) {
       this.sendToWatson(messages[0].text);
+    } else {
+      this.setState({watson_pp: 'http://www.pngmart.com/files/7/Call-Centre-PNG-Transparent-Image.png'});
     }
   }
 
