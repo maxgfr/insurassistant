@@ -45,14 +45,17 @@ export default class ChatScreen extends Component {
     user_pp: 'https://cdn-images-1.medium.com/max/1200/1*paQ7E6f2VyTKXHpR-aViFg.png',
     user_name: 'Maxime',
     list_message_unread: [],
-    historic: false
+    historic: false,
+    useWatson: true
   }
 
   componentDidMount(){
     socket.on('new_message', (data) => {
-      this.setState(previousState => ({
-        messages: GiftedChat.append(previousState.messages, data.message)
-      }))
+      if(data.session_id === this.state.session_id) {
+        this.setState(previousState => ({
+          messages: GiftedChat.append(previousState.messages, data.message)
+        }))
+      }
     })
   }
 
@@ -68,7 +71,7 @@ export default class ChatScreen extends Component {
       //console.log(all_messages);
       all_messages.sort((a, b) => (new Date(a.createdAt).getTime() < new Date(b.createdAt).getTime()) ? 1 : -1)
       //console.log(all_messages);
-      this.setState({messages: all_messages, historic: true, session_id: nav_session_id});
+      this.setState({messages: all_messages, historic: true, session_id: nav_session_id, useWatson: false});
     } else {
       const response_serv_init = await fetch('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/create-session', {
           method: 'GET'
@@ -86,9 +89,11 @@ export default class ChatScreen extends Component {
     this.setState(previousState => ({
       messages: GiftedChat.append(previousState.messages, messages)
     }))
+    socket.emit('send', { message: messages[0], session_id: this.state.session_id }); //send user message
     this.saveDb(messages[0]);
-    this.sendToWatson(messages[0].text);
-    socket.emit('send', { message: messages[0], session_id: this.state.session_id });
+    if(this.state.useWatson) {
+      this.sendToWatson(messages[0].text);
+    }
   }
 
   onSendSpecial = (data = []) => {
@@ -99,10 +104,8 @@ export default class ChatScreen extends Component {
       avatar: this.state.user_pp
     }
     var text = "";
-    if(data[0].location) {
-      text = "Here is my latitude";
-    } else if(data[0].image) {
-      text = "---IMAGE SENT---";
+    if(data[0].location || data[0].image) {
+      text = "";
     }
     const messageToUpload = data.map(message => ({
       ...message,
@@ -132,24 +135,18 @@ export default class ChatScreen extends Component {
       });
       var result_serv = await response_serv.json();
       //console.log(result_serv)
-      if(result_serv.data) {
-        this.state.context = result_serv.data.context
-        process_message = this.processWatsonMessage(result_serv)
-        process_message['createdAt'] = new Date();
-        this.setState(previousState => ({
-          messages: GiftedChat.append(previousState.messages, process_message)
-        }))
-        this.saveDb(process_message);
-      }
+      this.state.context = result_serv.data.context
+      process_message = this.processWatsonMessage(result_serv)
     } else {
       process_message = this.state.list_message_unread[this.state.list_message_unread.length - 1];
       this.state.list_message_unread.pop();
-      process_message['createdAt'] = new Date();
-      this.setState(previousState => ({
-        messages: GiftedChat.append(previousState.messages, process_message)
-      }))
-      this.saveDb(process_message);
     }
+    process_message['createdAt'] = new Date();
+    this.setState(previousState => ({
+      messages: GiftedChat.append(previousState.messages, process_message)
+    }))
+    this.saveDb(process_message);
+    socket.emit('send', { message: process_message, session_id: this.state.session_id }); // send watson message
   }
 
   saveDb = async (last_message) => {

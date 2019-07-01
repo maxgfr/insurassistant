@@ -39,7 +39,6 @@ export default class Home extends React.Component {
       }
       historicMessage.push(data);
       byHash[data.session_id] = {historic: historicMessage};
-      this.setState({byId: byId, byHash: byHash});
       if(this.state.session_id === data.session_id) {
         var msg = {
           author: data.message.user._id,
@@ -48,9 +47,13 @@ export default class Home extends React.Component {
         }
         var arr = this.state.messages;
         arr.push(msg);
-        this.setState({messages: arr});
+        this.setState({messages: arr, byId: byId, byHash: byHash});
       } else {
-        alert('Vous avez reçu un nouveau message sur une autre conversation')
+        var conv = [];
+        for(var j=0; j<byId.length; j++) {
+          conv.push({name: byId[j]});
+        }
+        this.setState({conversations: conv, byId: byId, byHash: byHash});
       }
     })
     axios.get('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/get-data').then(response => {
