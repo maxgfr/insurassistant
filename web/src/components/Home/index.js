@@ -14,7 +14,10 @@ export default class Home extends React.Component {
       messages: [],
       conversations: [],
       input: '',
-      username: 'watson_id'
+      username: 'watson_id',
+      watson_id: 'watson_id',
+      watson_name: 'Watson',
+      watson_pp: 'https://upload.wikimedia.org/wikipedia/en/thumb/0/00/IBM_Watson_Logo_2017.png/220px-IBM_Watson_Logo_2017.png',
     };
   }
 
@@ -47,16 +50,44 @@ export default class Home extends React.Component {
   }
 
   _onSend = () => {
-    if(this.state.input !== '') {
-      var msg = {
-        author: this.state.username,
-        message: this.state.input,
-        timestamp: new Date().getTime()
+    if(!this.state.session_id) {
+      alert('Veuillez selectionner une conversation.');
+    } else {
+      if(this.state.input !== '') {
+        this.saveDb(this.state.input);
+        var msg = {
+          author: this.state.username,
+          message: this.state.input,
+          timestamp: new Date().getTime()
+        }
+        var arr = this.state.messages;
+        arr.push(msg);
+        this.setState({messages: arr, input: ''});
       }
-      var arr = this.state.messages;
-      arr.push(msg);
-      this.setState({messages: arr, input: ''});
     }
+  }
+
+  saveDb = async (input) => {
+    var data = {
+      message: {
+        _id: Math.round(Math.random() * 1000000),
+        text: input,
+        createdAt: new Date(),
+        user: {
+          _id: this.state.watson_id,
+          name: this.state.watson_name,
+          avatar: this.state.watson_pp
+        }
+      },
+      session_id: this.state.session_id,
+    }
+    await fetch('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/save-data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    });
   }
 
   _onChangeText = (evt) => {
@@ -75,8 +106,8 @@ export default class Home extends React.Component {
         timestamp: arr[i].message.createdAt
       })
     }
-    msgs.sort((a, b) => (new Date(a.timestamp).getTime() < new Date(b.timestamp).getTime()) ? 1 : -1);
-    this.setState({messages: msgs})
+    msgs.sort((a, b) => (new Date(a.timestamp).getTime() > new Date(b.timestamp).getTime()) ? 1 : -1);
+    this.setState({messages: msgs, session_id: item.name})
   }
 
   render() {
