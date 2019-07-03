@@ -56,7 +56,7 @@ export default class HistoricScreen extends React.Component {
   _onRenderItem = ({ index, item }) => (
     <ListItem onPress={() => {this.props.navigation.navigate('Chat', {data: this.state.itemsByHash[item], historic: true, session_id: item})}}>
       <Left>
-         <Text>Dossier : {item}</Text>
+         <Text>Conversation {index + 1}</Text>
        </Left>
        <Right>
          <Icon name="arrow-forward" />

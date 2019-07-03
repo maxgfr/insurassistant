@@ -13,9 +13,9 @@
     "orientation": "portrait",
     "icon": "./assets/icon_rounded.png",
     "splash": {
-      "image": "./assets/logo.png",
+      "image": "./assets/tech-academy.jpeg",
       "resizeMode": "contain",
-      "backgroundColor": "#000000"
+      "backgroundColor": "#FFFFFF"
     },
     "updates": {
       "fallbackToCacheTimeout": 0

@@ -84,6 +84,23 @@ export default class ChatScreen extends Component {
 
   }
 
+  toneAnalyzerMessage = async (msg) => {
+    const response_serv_init = await fetch('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/tone', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({message: msg})
+    });
+    var response = await response_serv_init.json();
+    console.log(response);
+    if(response.success && response.result.document_tone.tones[0]) {
+      console.log("According to Watson, this message belongs to : " + response.result.document_tone.tones[0].tone_name + ", the accuracy is "+response.result.document_tone.tones[0].score +"%.");
+    } else {
+      console.log('Things don\'t appear to be working at the moment. Please try again later.');
+    }
+  }
+
   onSend = async (messages = []) => {
     //console.log(messages)
     this.setState(previousState => ({
@@ -91,6 +108,7 @@ export default class ChatScreen extends Component {
     }))
     socket.emit('send', { message: messages[0], session_id: this.state.session_id }); //send user message
     this.saveDb(messages[0]);
+    this.toneAnalyzerMessage(messages[0].text);
     if(this.state.useWatson) {
       this.sendToWatson(messages[0].text);
     } else {
@@ -106,8 +124,11 @@ export default class ChatScreen extends Component {
       avatar: this.state.user_pp
     }
     var text = "";
-    if(data[0].location || data[0].image) {
-      text = "";
+    if(data[0].location) {
+      text = `Position envoyée : https://maps.google.com/?q=${data[0].location.latitude},${data[0].location.longitude}`;
+    }
+    if(data[0].image) {
+      text = "Image envoyée disponible ici : "+data[0].image;
     }
     const messageToUpload = data.map(message => ({
       ...message,

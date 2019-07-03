@@ -50,8 +50,10 @@ export default class Home extends React.Component {
         this.setState({messages: arr, byId: byId, byHash: byHash});
       } else {
         var conv = [];
+        var h = 1;
         for(var j=0; j<byId.length; j++) {
-          conv.push({name: byId[j]});
+          conv.push({name: byId[j], name_simple: 'Conversation '+h});
+          h++;
         }
         this.setState({conversations: conv, byId: byId, byHash: byHash});
       }
@@ -74,8 +76,10 @@ export default class Home extends React.Component {
           byHash[data[i].session_id] = {historic: historicMessage};
         }
         var conv = [];
+        var h = 1;
         for(var j=0; j<byId.length; j++) {
-          conv.push({name: byId[j]});
+          conv.push({name: byId[j], name_simple: 'Conversation '+h});
+          h++;
         }
         this.setState({conversations: conv, byId: byId, byHash: byHash})
       }

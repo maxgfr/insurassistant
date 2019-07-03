@@ -14,6 +14,12 @@ const assistant = new AssistantV2({
   iam_apikey: process.env.ASSISTANT_APIKEY,
   url: process.env.ASSISTANT_URL
 });
+const ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
+const toneAnalyzer = new ToneAnalyzerV3({
+  version: '2017-09-21',
+  iam_apikey: process.env.TONE_API_KEY,
+  url: 'https://gateway-lon.watsonplatform.net/tone-analyzer/api'
+});
 const Cloudant = require('@cloudant/cloudant');
 const cloudant = Cloudant({
   account: process.env.CLOUDANT_ACCOUNT,
@@ -41,6 +47,27 @@ app.get('/test-db', (req, res) => {
 
 app.get('/', (req, res) => {
   res.json({success: true, data: {status: 'avalaible'}})
+});
+
+app.post('/tone', (req, res) => {
+  if(!req.body) {
+    res.json({success: false, message: 'no body'});
+    return;
+  }
+  const toneParams = {
+    tone_input: { 'text': req.body.message },
+    content_type: 'application/json',
+    content_language: "fr"
+  };
+  toneAnalyzer.tone(toneParams)
+    .then(toneAnalysis => {
+      //console.log(JSON.stringify(toneAnalysis, null, 2));
+      res.json({success: true, result: toneAnalysis});
+    })
+    .catch(err => {
+      //console.log('error:', err);
+      res.json({success: false, message: err});
+    });
 });
 
 app.get('/create-session', (req, res) => {

@@ -10,12 +10,12 @@ export default class ConversationListItem extends Component {
   }
 
   render() {
-    const { name } = this.props.data;
+    const { name, name_simple } = this.props.data;
 
     return (
       <div className="conversation-list-item" onClick={this.props.onClickItem}>
         <img className="conversation-photo" src={'https://robohash.org/'+name+'.png'} alt="conversation" />
-        <h1 className="conversation-title">{ name }</h1>
+        <h1 className="conversation-title">{ name_simple }</h1>
       </div>
     );
   }
