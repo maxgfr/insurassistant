@@ -147,4 +147,12 @@ io.on('connection', (socket) => {
       socket.broadcast.emit('new_message', msg);
   });
 
+  socket.on('tone', (data) => {
+      socket.broadcast.emit('new_tone', data);
+  });
+
+  socket.on('irl', (data) => {
+      socket.broadcast.emit('new_irl', data);
+  });
+
 });

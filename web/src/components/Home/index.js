@@ -26,6 +26,24 @@ export default class Home extends React.Component {
 
 
   componentDidMount () {
+    socket.on('new_tone', (data) => {
+      //console.log(data);
+      if(data.tone_name === 'Anger') {
+        for(var i = 0; i<this.state.conversations.length; i++) {
+          if(this.state.conversations[i].name === data.session_id) {
+            alert('Pouvez-vous regarder de plus près la ' + this.state.conversations[i].name_simple);
+          }
+        }
+      }
+    });
+    socket.on('new_irl', (data) => {
+      //console.log(data);
+      for(var i = 0; i<this.state.conversations.length; i++) {
+        if(this.state.conversations[i].name === data.session_id) {
+          alert('La ' + this.state.conversations[i].name_simple +' a besoin d\'un conseiller');
+        }
+      }
+    });
     socket.on('new_message', (data) => {
       //console.log(data);
       var historicMessage = [];

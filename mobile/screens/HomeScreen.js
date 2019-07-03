@@ -23,8 +23,8 @@ export default class HomeScreen extends React.Component {
       <Container style={{backgroundColor: "#ffffff"}}>
         <Header style={{backgroundColor: "#ffffff", borderBottomWidth: 0}}>
           <Left />
-          <Body>
-            <Title>Home</Title>
+          <Body style={{flex: 3}}>
+            <Title>InsurAssistant</Title>
           </Body>
           <Right />
         </Header>

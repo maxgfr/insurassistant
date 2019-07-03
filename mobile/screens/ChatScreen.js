@@ -52,6 +52,51 @@ export default class ChatScreen extends Component {
   componentDidMount(){
     socket.on('new_message', (data) => {
       if(data.session_id === this.state.session_id) {
+        //STATIC
+        if(data.message.text== '//LAUNCH_REPLACEMENT_BOT') {
+          data.message = {
+            _id: Math.round(Math.random() * 1000000),
+            text: 'Je suis le bot WatsonVéhicule de Remplacement. Veuillez choisir le véhicule que vous souhaitez parmi la liste ci-dessous. ',
+            createdAt: new Date(),
+            quickReplies: {
+              type: 'radio', // or 'checkbox',
+              keepIt: true,
+              values: [
+                {
+                  title: 'Véhicule 1',
+                  value: 'vehicule_1',
+                },
+                {
+                  title: 'Véhicule 2',
+                  value: 'vehicule_2',
+                }
+              ],
+            },
+            user: {
+              _id: this.state.watson_id,
+              name: this.state.watson_name,
+              avatar: this.state.watson_pp
+            }
+          };
+          this.state.list_message_unread.push({
+            _id: Math.round(Math.random() * 1000000),
+            text: 'Le taxi a été commandé.',
+            user: {
+              _id: this.state.watson_id,
+              name: this.state.watson_name,
+              avatar: this.state.watson_pp
+            }
+          })
+          this.state.list_message_unread.push({
+            _id: Math.round(Math.random() * 1000000),
+            text: 'Votre véhicule de remplacement sera disponible à x heures et à x adresse.Souhaitez-vous un taxi pour vous y rendre?',
+            user: {
+              _id: this.state.watson_id,
+              name: this.state.watson_name,
+              avatar: this.state.watson_pp
+            }
+          })
+        }
         this.setState(previousState => ({
           messages: GiftedChat.append(previousState.messages, data.message)
         }))
@@ -93,11 +138,12 @@ export default class ChatScreen extends Component {
         body: JSON.stringify({message: msg})
     });
     var response = await response_serv_init.json();
-    console.log(response);
+    //console.log(response);
     if(response.success && response.result.document_tone.tones[0]) {
-      console.log("According to Watson, this message belongs to : " + response.result.document_tone.tones[0].tone_name + ", the accuracy is "+response.result.document_tone.tones[0].score +"%.");
+      socket.emit('tone', { tone_name: response.result.document_tone.tones[0].tone_name, score: response.result.document_tone.tones[0].score, session_id: this.state.session_id });
+      //console.log("According to Watson, this message belongs to : " + response.result.document_tone.tones[0].tone_name + ", the accuracy is "+response.result.document_tone.tones[0].score +"%.");
     } else {
-      console.log('Things don\'t appear to be working at the moment. Please try again later.');
+      //console.log('Things don\'t appear to be working at the moment. Please try again later.');
     }
   }
 
@@ -113,6 +159,18 @@ export default class ChatScreen extends Component {
       this.sendToWatson(messages[0].text);
     } else {
       this.setState({watson_pp: 'http://www.pngmart.com/files/7/Call-Centre-PNG-Transparent-Image.png'});
+      this.searchSaveMessage(); //STATIC
+    }
+  }
+
+  searchSaveMessage = () => {
+    if(this.state.list_message_unread.length != 0) {
+      var process_message = this.state.list_message_unread[this.state.list_message_unread.length - 1];
+      process_message['createdAt'] = new Date();
+      this.state.list_message_unread.pop();
+      this.setState(previousState => ({
+        messages: GiftedChat.append(previousState.messages, process_message)
+      }))
     }
   }
 
@@ -128,7 +186,7 @@ export default class ChatScreen extends Component {
       text = `Position envoyée : https://maps.google.com/?q=${data[0].location.latitude},${data[0].location.longitude}`;
     }
     if(data[0].image) {
-      text = "Image envoyée disponible ici : "+data[0].image;
+      text = "Image envoyée";
     }
     const messageToUpload = data.map(message => ({
       ...message,
@@ -148,28 +206,40 @@ export default class ChatScreen extends Component {
     }
     //console.log(data)
     var process_message = null;
-    if(this.state.list_message_unread.length == 0) {
-      const response_serv = await fetch('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/send-message', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data)
-      });
-      var result_serv = await response_serv.json();
-      //console.log(result_serv)
-      this.state.context = result_serv.data.context
-      process_message = this.processWatsonMessage(result_serv)
-    } else {
-      process_message = this.state.list_message_unread[this.state.list_message_unread.length - 1];
-      this.state.list_message_unread.pop();
+    const response_serv = await fetch('https://insurassistant-anxious-hyena.eu-gb.mybluemix.net/send-message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    });
+    var result_serv = await response_serv.json();
+    //console.log(result_serv)
+    if(result_serv.success) {
+      if(result_serv.data.output.intents[0] && result_serv.data.output.intents[0].intent == 'Conseiller'
+          || result_serv.data.output.entities[0] && (result_serv.data.output.entities[0].value == 'pneu' || result_serv.data.output.entities[0].value == 'moteur')) {
+          process_message = this.processWatsonMessage(result_serv)
+          this.setState({ list_message_unread: [] });
+          this.state.useWatson = false;
+          socket.emit('irl', { session_id: this.state.session_id });
+      } else {
+        if(this.state.list_message_unread.length == 0) {
+          if(result_serv.data.context) {
+            this.state.context = result_serv.data.context
+          }
+          process_message = this.processWatsonMessage(result_serv);
+        } else {
+          process_message = this.state.list_message_unread[this.state.list_message_unread.length - 1];
+          this.state.list_message_unread.pop();
+        }
+      }
+      process_message['createdAt'] = new Date();
+      this.setState(previousState => ({
+        messages: GiftedChat.append(previousState.messages, process_message)
+      }))
+      this.saveDb(process_message);
+      socket.emit('send', { message: process_message, session_id: this.state.session_id }); // send watson message
     }
-    process_message['createdAt'] = new Date();
-    this.setState(previousState => ({
-      messages: GiftedChat.append(previousState.messages, process_message)
-    }))
-    this.saveDb(process_message);
-    socket.emit('send', { message: process_message, session_id: this.state.session_id }); // send watson message
   }
 
   saveDb = async (last_message) => {
