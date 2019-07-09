@@ -46,7 +46,7 @@ export default class ChatScreen extends Component {
     user_name: 'Maxime',
     list_message_unread: [],
     historic: false,
-    useWatson: true
+    useWatson: true,
   }
 
   componentDidMount(){
@@ -148,6 +148,7 @@ export default class ChatScreen extends Component {
   }
 
   onSend = async (messages = []) => {
+    console.log(this.state.watson_pp)
     //console.log(messages)
     this.setState(previousState => ({
       messages: GiftedChat.append(previousState.messages, messages)
@@ -158,7 +159,6 @@ export default class ChatScreen extends Component {
     if(this.state.useWatson) {
       this.sendToWatson(messages[0].text);
     } else {
-      this.setState({watson_pp: 'http://www.pngmart.com/files/7/Call-Centre-PNG-Transparent-Image.png'});
       this.searchSaveMessage(); //STATIC
     }
   }
@@ -376,7 +376,6 @@ export default class ChatScreen extends Component {
           messages={this.state.messages}
           onSend={this.onSend}
           renderUsernameOnMessage={true}
-          showUserAvatar={true}
           isLoadingEarlier={this.state.isLoadingEarlier}
           user={{
             _id: this.state.user_id,

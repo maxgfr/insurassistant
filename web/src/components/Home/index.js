@@ -16,11 +16,12 @@ export default class Home extends React.Component {
       byHash: {},
       messages: [],
       conversations: [],
+      actif: [],
       input: '',
       username: 'watson_id',
       watson_id: 'watson_id',
-      watson_name: 'Watson',
-      watson_pp: 'https://upload.wikimedia.org/wikipedia/en/thumb/0/00/IBM_Watson_Logo_2017.png/220px-IBM_Watson_Logo_2017.png',
+      watson_name: 'Agent',
+      watson_pp: 'https://images.vexels.com/media/users/3/130000/isolated/lists/20af4b0f48b3839e114d6cc4a9e98790-customer-service-agent.png',
     };
   }
 
@@ -32,6 +33,7 @@ export default class Home extends React.Component {
         for(var i = 0; i<this.state.conversations.length; i++) {
           if(this.state.conversations[i].name === data.session_id) {
             alert('Pouvez-vous regarder de plus près la ' + this.state.conversations[i].name_simple);
+            this.state.actif.push(this.state.conversations[i].name);
           }
         }
       }
@@ -41,6 +43,7 @@ export default class Home extends React.Component {
       for(var i = 0; i<this.state.conversations.length; i++) {
         if(this.state.conversations[i].name === data.session_id) {
           alert('La ' + this.state.conversations[i].name_simple +' a besoin d\'un conseiller');
+          this.state.actif.push(this.state.conversations[i].name);
         }
       }
     });
@@ -174,6 +177,7 @@ export default class Home extends React.Component {
           <ConversationList
             conversations={this.state.conversations}
             onClickItem={this._onClickItem}
+            actif={this.state.actif}
           />
         </div>
         <div className="scrollable content">
