@@ -33,8 +33,8 @@ cd mobile && npm install && npm start
 
 <div align="center">
   <img src="https://github.com/maxgfr/insurassistant/blob/master/.github/web/screen1.png"/>
-  <img src="https://github.com/maxgfr/insurassistant/blob/master/.github/mobile/screen1.png"/>
-  <img src="https://github.com/maxgfr/insurassistant/blob/master/.github/mobile/screen2.png"/>
-  <img src="https://github.com/maxgfr/insurassistant/blob/master/.github/mobile/screen3.png"/>
-  <img src="https://github.com/maxgfr/insurassistant/blob/master/.github/mobile/screen4.png"/>
+  <img src="https://github.com/maxgfr/insurassistant/blob/master/.github/mobile/screen1.jpg"/>
+  <img src="https://github.com/maxgfr/insurassistant/blob/master/.github/mobile/screen2.jpg"/>
+  <img src="https://github.com/maxgfr/insurassistant/blob/master/.github/mobile/screen3.jpg"/>
+  <img src="https://github.com/maxgfr/insurassistant/blob/master/.github/mobile/screen4.jpg"/>
 </div>
