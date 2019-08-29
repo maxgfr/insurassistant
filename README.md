@@ -14,7 +14,7 @@ mv server/.env.example server/.env
 
 Secondly, you can run the different part of the application
 
-To Run the server  :
+To run the server  :
 ```
 cd server && npm install && npm start
 ```
